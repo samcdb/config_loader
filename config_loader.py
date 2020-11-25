@@ -48,6 +48,11 @@ def main():
 
     try:
         ip_addr = getEthernetIP()
+        byte_list = ip_addr.split('.')
+
+        #if byte_list[0]
+
+
     except:
         ip_addr = "Error"
     finally:

@@ -12,10 +12,6 @@ with socketserver.TCPServer(("192.168.88.254", PORT), handler) as httpd:
     httpd.serve_forever()
 
 
-'''
-
-
-
 
 import http.server
 import socketserver
@@ -32,3 +28,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 with socketserver.TCPServer(("192.168.88.254", PORT), Handler) as httpd:
     print("serving at port", PORT)
     httpd.serve_forever()
+    '''
+import http.server
+import socketserver
+
+def createServer(path, ip, port):
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=path, **kwargs)
+
+
+    with socketserver.TCPServer((ip, port), Handler) as httpd:
+        print("serving at: ", ip + ":" + port)
+        httpd.serve_forever()

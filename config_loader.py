@@ -1,6 +1,7 @@
 from routeros_api import Api
 from config_GUI import Interface
-#from server import createServer
+from server import createServer
+import threading
 import time
 import tkinter as tk
 import os
@@ -14,7 +15,9 @@ def getEthernetIP():
 
 def launchConfig(path, file_name, ip, port=PORT):
     # launch web server to host .rsc file
-    #thread.start_new_thread(createServer(path, ip, port))
+    # use thread so rest of program can continue
+    server_thread = threading.Thread(target=createServer, args=(path, ip, port))
+    server_thread.start()
 
     reboot = '/system/reboot'
     fetch = '/tool/fetch =url=http://{0}:{1}/{2} =mode=http =dst-path=flash/{2}'.format(ip, port, file_name)
@@ -23,16 +26,14 @@ def launchConfig(path, file_name, ip, port=PORT):
 
     while(True):
         try:
-            
-            #router = Api('192.168.88.1')
+            router = Api('192.168.88.1')
             #r = router.talk('/system/identity/print')
             #print(r)
             print('connected')
-
             # router gets config file from web servers
-            #router.talk(fetch_file)
+            router.talk(fetch)
             print("file fetched")
-            #router.talk(reset_config)
+            router.talk(reset)
             print("resetting")
             time.sleep(3)
 
@@ -42,7 +43,7 @@ def launchConfig(path, file_name, ip, port=PORT):
 def main():
     ip_addr = getEthernetIP()
     window = tk.Tk()
-    Interface(window, ip_addr, tempFunc)
+    Interface(window, ip_addr, launchConfig)
     window.mainloop()
 
 '''

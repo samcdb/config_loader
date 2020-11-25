@@ -37,7 +37,9 @@ def createServer(path, ip, port):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=path, **kwargs)
 
-
     with socketserver.TCPServer((ip, port), Handler) as httpd:
-        print("serving at: ", ip + ":" + port)
+        print("serving at: {}:{}".format(ip, port))
         httpd.serve_forever()
+
+if __name__ == '__main__':
+    createServer()

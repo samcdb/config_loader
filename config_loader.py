@@ -24,53 +24,36 @@ def launchConfig(path, file_name, ip, port=PORT):
     reset = '/system/reset-configuration =no-defaults=yes =run-after-reset=flash/config_with_delay.rsc'
     print(fetch)
 
+    router_count = 0
     while(True):
         try:
             router = Api('192.168.88.1')
-            #r = router.talk('/system/identity/print')
-            #print(r)
+            router_count += 1
+            print("Router {}".format(router_count))
             print('connected')
             # router gets config file from web servers
             router.talk(fetch)
             print("file fetched")
+            # router is reset and then loads new config file
             router.talk(reset)
-            print("resetting")
-            time.sleep(3)
+            print("reset")
 
-        except TimeOutError:
-            print(timedout)
+            time.sleep(1)
+
+        except:
+            return
 
 def main():
-    ip_addr = getEthernetIP()
-    window = tk.Tk()
-    Interface(window, ip_addr, launchConfig)
-    window.mainloop()
+    ip_addr = ""
 
-'''
-def main():
-    
-    reboot = '/system/reboot'
-    fetch_file = '/tool/fetch =url=http://192.168.88.254:8000/config_with_delay.rsc =mode=http =dst-path=flash/config_with_delay.rsc'
-    reset_config = '/system/reset-configuration =no-defaults=yes =run-after-reset=flash/config_with_delay.rsc'  
-
-    while(True):
-        try:
-            
-            #router = Api('192.168.88.1')
-            #r = router.talk('/system/identity/print')
-            #print(r)
-            print('connected')
-
-            # router gets config file from web servers
-            #router.talk(fetch_file)
-            print("file fetched")
-            #router.talk(reset_config)
-            print("resetting")
-            time.sleep(3)
-
-        except TimeOutError:
-            print(timedout)
-'''
+    try:
+        ip_addr = getEthernetIP()
+    except:
+        ip_addr = "Error"
+    finally:
+        window = tk.Tk()
+        Interface(window, ip_addr, launchConfig)
+        window.mainloop()
 
 if __name__ == "__main__":
     main()

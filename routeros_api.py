@@ -212,7 +212,6 @@ class Api:
 
         received_sentence = ['']
         while received_sentence[0] != '!done':
-            print(received_sentence[0])
             received_sentence = read_sentence()
             paragraph.append(received_sentence)
         return paragraph
@@ -242,7 +241,6 @@ class Api:
             # You can comment following line out if you don't want to raise an error in case of !trap
             raise RouterOSTrapError("\nCommand: {}\nReturned an error: {}".format(sentence, reply))
             pass
-
         # reply is list containing strings with RAW output form API
         # nice_reply is a list containing output form API sorted in dictionary for easier use later
         nice_reply = []

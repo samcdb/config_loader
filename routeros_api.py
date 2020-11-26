@@ -1,10 +1,11 @@
 # Author: Arturs Laizans
-
+# https://github.com/LaiArturs/RouterOS_API
+# Note from Samuel de Beer: Commented out verbose/logs
 import socket
 import ssl
 import hashlib
 import binascii
-#from .verbose import Log
+# from .verbose import Log
 
 # Constants - Define defaults
 PORT = 8728
@@ -17,7 +18,7 @@ USE_SSL = False
 
 VERBOSE = False  # Whether to print API conversation width the router. Useful for debugging
 VERBOSE_LOGIC = 'OR'  # Whether to print and save verbose log to file. AND - print and save, OR - do only one.
-VERBOSE_FILE_MODE = 'w'  # Weather to create new file ('w') for log or append to old one ('a').
+VERBOSE_FILE_MODE = 'w'  # Whether to create new file ('w') for log or append to old one ('a').
 
 CONTEXT = ssl.create_default_context()  # It is possible to predefine context for SSL socket
 CONTEXT.check_hostname = False

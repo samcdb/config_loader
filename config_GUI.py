@@ -4,6 +4,9 @@ from os.path import isfile, join
 
 class Interface:
     def __init__(self, window, ip, launch_func):
+        # state variable - if false then nothing runs
+        self.run = True
+
         self.launch_func = launch_func
         self.ip = ip
         self.path = ""
@@ -18,7 +21,7 @@ class Interface:
         self.window.title("Config Loader " + self.ip)
 
         # Frames (in positional order)
-        self.window_frm = tk.Frame(master=window, pady=10, padx=10)
+        self.window_frm = tk.Frame(master=window, pady=10, padx=20)
         self.error_frm = tk.Frame(master=self.window_frm)
         self.dir_frm = tk.Frame(master=self.window_frm)
         self.open_frm = tk.Frame(master=self.window_frm, pady=10)
@@ -37,12 +40,12 @@ class Interface:
 
         # text
         self.error_txt = tk.StringVar()
-        self.error_txt.set("IP Error: Check Network Settings and Restart Config Loader" if ip == "Error" else "")
+        self.error_txt.set(self.ip_check())
         self.detail_txt = tk.StringVar()
         self.detail_txt.set("")
 
         # labels
-        self.detail_lbl = tk.Label(master=self.detail_frm, textvariable=self.detail_txt)
+        self.detail_lbl = tk.Label(master=self.detail_frm, textvariable=self.detail_txt, fg="blue")
         self.error_lbl = tk.Label(master=self.error_frm, textvariable=self.error_txt, fg="red")
 
         # pack components
@@ -58,6 +61,9 @@ class Interface:
         
     # dynamically draws checkboxes for all .rsc files
     def draw(self):
+        if self.run == False:
+            return
+
         try:
             # clear old frames
             for frame in self.frames:
@@ -99,6 +105,10 @@ class Interface:
 
     # launches whicever function is passed into Interface __init__()
     def launch(self):
+        self.detail_txt.set("")
+        if self.run == False:
+            return
+
         target_file = ""
         check_count = 0
         
@@ -114,16 +124,27 @@ class Interface:
             self.detail_txt.set("Please select a file")
             return
 
-        self.detail_txt.set("Running...")
         self.launch_func(self.path, target_file, self.ip) 
-        self.detail_txt.set("Done...")
+        self.detail_txt.set("Done")
 
-
-    # wanted to make multi line lambda 
+    # wanted to make multi line lambda (couldn't)
     # get path when enter is pressed
     def enter(self, event):
+        if self.run == False:
+            return
+
         if event == "":
             return
 
         self.path = event
         self.draw()
+
+    def ip_check(self):
+        if self.ip[:3] == "(0)":
+            self.run = False
+            return "Error: No IP - Check connection and restart Config Loader"
+        elif self.ip[:3] == "(1)":
+            self.run = False
+            return "Error: Wrong IP - Ensure IP address is 192.168.88.(2-254) then restart Config Loader"
+        else:
+            return ""

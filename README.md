@@ -24,6 +24,15 @@ and then configured with a chosen file (.rsc).
 The user must set a static IP address of 192.168.88.(2-254) on their computer before running.
 All requirements and necessary procedures are explained to the user via the GUI and any invalid entries or commands are blocked.
 
+### PLEASE NOTE!
+Any .rsc script that is chosen must have:
+
+	:delay 15s
+
+at the beginning of the script.
+
+This is because the RouterOS/MikroTik 'Run After Reset' function does not work properly. The script needs to wait 15s before running.
+
 
 
 

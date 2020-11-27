@@ -1,48 +1,32 @@
-'''
 import http.server
 import socketserver
-import socket
+import threading
+import time
 
-PORT = 8000
+# launch webserver to transfer files to router  
 
-handler = http.server.SimpleHTTPRequestHandler
+class Server:
+    def __init__(self, path, ip, port):
+        self.path = path
+        self.ip = ip
+        self.port = port
+        self.server = self.start(path, ip, port)
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
 
-with socketserver.TCPServer(("192.168.88.254", PORT), handler) as httpd:
-    print("Server started at: 192.168.88.254:" + str(PORT))
-    httpd.serve_forever()
+    def start(self, path, ip, port):
+        print("path {}    ip {}    port {}".format(path, ip, port))
+        class Handler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, directory=path, **kwargs)
 
-
-
-import http.server
-import socketserver
-
-PORT = 8000
-DIRECTORY = 'D:/OneSpace/config_loader/server'
-
-
-class Handler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=DIRECTORY, **kwargs)
-
-
-with socketserver.TCPServer(("192.168.88.254", PORT), Handler) as httpd:
-    print("serving at port", PORT)
-    httpd.serve_forever()
-    '''
-import http.server
-import socketserver
-
-# launch webserver to transfer files to router
-def createServer(path, ip, port):
-    class Handler(http.server.SimpleHTTPRequestHandler):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, directory=path, **kwargs)
-
-    with socketserver.TCPServer((ip, port), Handler) as httpd:
+        server = socketserver.TCPServer((ip, port), Handler)
         print("serving at: {}:{}".format(ip, port))
-        httpd.serve_forever()
+        return server
 
-if __name__ == '__main__':
-    createServer()
+    def thread_start(self):
+        self.thread.start() 
 
+    def shutdown(self):
+        self.server.shutdown()
+        self.server.server_close()
 

@@ -27,7 +27,7 @@ All requirements and necessary procedures are explained to the user via the GUI 
 ### PLEASE NOTE!
 Any .rsc script that is chosen must have:
 
-	:delay 15s
+	:delay 15s;
 
 at the beginning of the script.
 

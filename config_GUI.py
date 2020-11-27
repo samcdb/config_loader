@@ -103,7 +103,7 @@ class Interface:
             self.error_txt.set("Invalid path")
         
 
-    # launches whicever function is passed into Interface __init__()
+    # launches whichever function is passed into Interface __init__()
     def launch(self):
         self.detail_txt.set("")
         if self.run == False:
@@ -124,8 +124,18 @@ class Interface:
             self.detail_txt.set("Please select a file")
             return
 
-        self.launch_func(self.path, target_file, self.ip) 
+        # stop all GUI inputs while function runs
+        self.run = False
+        # ensure text is set to "Running..."
+        self.detail_txt.set("Running...")
+        self.window.update_idletasks()
+
+        self.launch_func(self.path, target_file, self.ip)
+        self.window.update_idletasks() 
         self.detail_txt.set("Done")
+        self.run = True
+        #draw checkboxes again in case new file was made
+        self.draw()
 
     # wanted to make multi line lambda (couldn't)
     # get path when enter is pressed
@@ -139,6 +149,7 @@ class Interface:
         self.path = event
         self.draw()
 
+    # check for IP errors
     def ip_check(self):
         if self.ip[:3] == "(0)":
             self.run = False

@@ -44,7 +44,7 @@ def check_delay(path, file_name):
 def write_delay(path, file_name, delay_pos):
     print("Copying file and writing delay")
     src_file = os.path.join(path, file_name)
-    delayed_file = os.path.join(path, file_name[:-4] + "_with_delay_{}.rsc".format(time.time())) # try to make sure no other files have this name
+    delayed_file = os.path.join(path, file_name[:-4] + "_WITH_DELAY.rsc") # try to make sure no other files have this name
     print(delayed_file)
     shutil.copy(src_file, delayed_file)
     contents = []
@@ -62,57 +62,55 @@ def write_delay(path, file_name, delay_pos):
 
 # config set up function 
 def launchConfig(path, file_name, ip, port=PORT):
-    try:
-        original_name = file_name
-        print("path " + path)
-        print("file " + file_name)
-        delay_present, line = check_delay(path, file_name)
+    print("path " + path)
+    print("file " + file_name)
+    delay_present, line = check_delay(path, file_name)
 
-        if not delay_present:
-            file_name = write_delay(path, file_name, line)
+    if not delay_present:
+        file_name = write_delay(path, file_name, line)
 
         
-        # launch web server to host .rsc file
-        # use thread so rest of program can continue
+    # launch web server to host .rsc file
+    # use thread so rest of program can continue
         
-        file_server = Server(path, ip, port)
-        file_server.thread_start()
+    file_server = Server(path, ip, port)
+    file_server.thread_start()
 
-        reboot = '/system/reboot'
-        fetch = '/tool/fetch =url=http://{}:{}/{} =mode=http =dst-path=flash/{}'.format(ip, port, file_name, original_name)
-        reset = '/system/reset-configuration =no-defaults=yes =run-after-reset=flash/{}'.format(original_name)
-        router_count = 0
+    reboot = '/system/reboot'
+    fetch = '/tool/fetch =url=http://{0}:{1}/{2} =mode=http =dst-path=flash/{2}'.format(ip, port, file_name)
+    reset = '/system/reset-configuration =no-defaults=yes =run-after-reset=flash/{}'.format(file_name)
+    router_count = 0
 
-        while(True):
+    while(True):
             
-                router = routeros_api.Api('192.168.88.1')
-                router_count += 1
+        try:
+            router = routeros_api.Api('192.168.88.1')
+            router_count += 1
 
-                print()
-                print("Router {}".format(router_count))
-                print('connected')
-                # router gets config file from web servers
-                router.talk(fetch)
-                print("file fetched")
-                # router is reset and then loads new config file
-                router.talk(reset)
-                print("resetting router")
-                # allow time for router to reset and a new connection to be made
-                time.sleep(1)
+            print()
+            print("Router {}".format(router_count))
+            print('connected')
+            # router gets config file from web servers
+            router.talk(fetch)
+            print("file fetched")
+            # router is reset and then loads new config file
+            router.talk(reset)
+            print("resetting router")
+            # allow time for router to reset and a new connection to be made
+            time.sleep(1)
 
-    except (socket.timeout, routeros_api.CreateSocketError):
+        except (socket.timeout, routeros_api.CreateSocketError):
             # this isn't clean but it's the only way I can see to allow the program to finish/conclude
             # No routers left => timeout/CreateSocketError => done
             print("Done")
-            
-    finally:
-        # if delay copy was made, delete it
-        if (not delay_present):
-            print("cleaning up")
-            os.remove(os.path.join(path, file_name))
+            # if delay copy was made, delete it
+            if (not delay_present):
+                print("cleaning up")
+                os.remove(os.path.join(path, file_name))
 
-        file_server.shutdown()
-        print("No routers left: timing out")
+            file_server.shutdown()
+            print("No routers left: timing out")
+            break
         
     
 

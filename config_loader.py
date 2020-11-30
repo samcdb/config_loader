@@ -66,7 +66,10 @@ def write_delay(path, file_name, delay_pos):
 
 # config set up function 
 def launchConfig(path, file_name, ip, port=PORT):
+    # returned boolean to show run success/failure
+    result = False
     run_time = time.time()
+
     print("path " + path)
     print("file " + file_name)
     delay_present, line = check_delay(path, file_name)
@@ -127,6 +130,7 @@ def launchConfig(path, file_name, ip, port=PORT):
         # this isn't clean but it's the only way I can see to allow the program to finish/conclude
         # No routers left => timeout/CreateSocketError => done
         print("Done")
+        success = True
         file_server.shutdown()
 
     except RepeatedConnectioNError:
@@ -142,21 +146,11 @@ def launchConfig(path, file_name, ip, port=PORT):
             os.remove(os.path.join(path, file_name))
 
         run_time = int(time.time() - run_time)
-        print("time taken: {}".format(run_time))
+        print("time taken: {} seconds".format(run_time))
+
+        return result
                 
 
-        '''
-            print("Error")
-            file_server.shutdown()
-            
-            # if delay copy was made, delete it
-            if (not delay_present):
-                print("cleaning up")
-                os.remove(os.path.join(path, file_name))
-
-            print("Router Error")
-            return False
-        '''
     
 
 def main():
@@ -170,10 +164,10 @@ def main():
             raise WrongIPError
 
     except AttributeError:
-        ip_addr = "(0) No IP Error!"
+        ip_addr = "(1) No IP Error!"
         print(ip_addr)
     except WrongIPError:
-        ip_addr = "(1) Wrong IP Error!"
+        ip_addr = "(2) Wrong IP Error!"
         print(ip_addr)
     finally:
         window = tk.Tk()

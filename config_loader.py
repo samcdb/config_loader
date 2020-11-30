@@ -16,6 +16,10 @@ class WrongIPError(Exception):
     """Raised when IP address is not set to static 192.168.88.(2-254 range)"""
     pass
 
+class RepeatedConnectionError(Exception):
+    """Raised when there are multiple (5) consecutive ResetConnectionErrors """
+    pass
+
 # use IPCONFIG to get eth0 IP
 def getEthernetIP():
     addresses = os.popen('IPCONFIG | FINDSTR /R "Ethernet adapter Local Area Connection .* Address.*[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"')
@@ -62,6 +66,7 @@ def write_delay(path, file_name, delay_pos):
 
 # config set up function 
 def launchConfig(path, file_name, ip, port=PORT):
+    run_time = time.time()
     print("path " + path)
     print("file " + file_name)
     delay_present, line = check_delay(path, file_name)
@@ -80,38 +85,78 @@ def launchConfig(path, file_name, ip, port=PORT):
     fetch = '/tool/fetch =url=http://{0}:{1}/{2} =mode=http =dst-path=flash/{2}'.format(ip, port, file_name)
     reset = '/system/reset-configuration =no-defaults=yes =run-after-reset=flash/{}'.format(file_name)
     router_count = 0
+    tries = 0
 
-    while(True):
+    try:
+
+        while(True):
+            try:
             
-        try:
-            router = routeros_api.Api('192.168.88.1')
-            router_count += 1
+                router = routeros_api.Api('192.168.88.1')
+                tries = 0
+                router_count += 1
 
-            print()
-            print("Router {}".format(router_count))
-            print('connected')
-            # router gets config file from web servers
-            router.talk(fetch)
-            print("file fetched")
-            # router is reset and then loads new config file
-            router.talk(reset)
-            print("resetting router")
-            # allow time for router to reset and a new connection to be made
-            time.sleep(1)
+                print()
+                print("Router {}".format(router_count))
+                print('connected')
+                # router gets config file from web servers
+                router.talk(fetch)
+                print("file fetched")
+                # router is reset and then loads new config file
+                router.talk(reset)
+                print("resetting router")
+                print()
+                print("looking for more routers...")
+                print()
 
-        except (socket.timeout, routeros_api.CreateSocketError):
-            # this isn't clean but it's the only way I can see to allow the program to finish/conclude
-            # No routers left => timeout/CreateSocketError => done
-            print("Done")
+                # allow time for router to reset and a new connection to be made
+                #time.sleep(1)
+                router.close()
+                time.sleep(1)
+
+            except ConnectionResetError:
+                tries += 1
+                print("connection attempts = {}".format(tries))
+
+                if tries == 5:
+                    raise RepeatedConnectionError
+                    
+
+
+    except (socket.timeout, routeros_api.CreateSocketError):
+        # this isn't clean but it's the only way I can see to allow the program to finish/conclude
+        # No routers left => timeout/CreateSocketError => done
+        print("Done")
+        file_server.shutdown()
+
+    except RepeatedConnectioNError:
+            print("ConnectionResetError 5 times")
+            print("terminating")
+
+    finally:
+        file_server.shutdown()
+                
+        # if delay copy was made, delete it
+        if (not delay_present):
+            print("cleaning up")
+            os.remove(os.path.join(path, file_name))
+
+        run_time = int(time.time() - run_time)
+        print("time taken: {}".format(run_time))
+                
+
+        '''
+            print("Error")
+            file_server.shutdown()
+            
             # if delay copy was made, delete it
             if (not delay_present):
                 print("cleaning up")
                 os.remove(os.path.join(path, file_name))
 
-            file_server.shutdown()
-            print("No routers left: timing out")
-            break
-        
+            print("Router Error")
+            return False
+        '''
     
 
 def main():

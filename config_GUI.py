@@ -130,9 +130,15 @@ class Interface:
         self.detail_txt.set("Running...")
         self.window.update_idletasks()
 
-        self.launch_func(self.path, target_file, self.ip)
-        self.window.update_idletasks() 
-        self.detail_txt.set("Done")
+        success = self.launch_func(self.path, target_file, self.ip) 
+        self.detail_txt.set("Done") if success else self.error_txt.set("Unsuccessful")
+
+        if success:
+            self.detail_txt.set("Done")
+        else:
+            self.error_txt.set("Unsuccessful")
+
+        self.window.update_idletasks()
         self.run = True
         #draw checkboxes again in case new file was made
         self.draw()

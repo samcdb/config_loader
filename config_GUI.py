@@ -157,10 +157,10 @@ class Interface:
 
     # check for IP errors
     def ip_check(self):
-        if self.ip[:3] == "(0)":
+        if self.ip[:3] == "(1)":
             self.run = False
             return "Error: No IP - Check connection and restart Config Loader"
-        elif self.ip[:3] == "(1)":
+        elif self.ip[:3] == "(2)":
             self.run = False
             return "Error: Wrong IP - Ensure IP address is 192.168.88.(2-254) then restart Config Loader"
         else:

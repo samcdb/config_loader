@@ -34,6 +34,9 @@ def check_delay(path, file_name):
 
         for line in rsc_file:
             line_list = line.split()
+            if len(line_list) == 0:
+                line_count += 1
+                continue
             if line_list[0] == '#':
                 line_count += 1
                 continue
@@ -67,7 +70,7 @@ def write_delay(path, file_name, delay_pos):
 # config set up function 
 def launchConfig(path, file_name, ip, port=PORT):
     # returned boolean to show run success/failure
-    result = False
+    result_msg = ""
     run_time = time.time()
 
     print("path " + path)
@@ -113,7 +116,6 @@ def launchConfig(path, file_name, ip, port=PORT):
                 print()
 
                 # allow time for router to reset and a new connection to be made
-                #time.sleep(1)
                 router.close()
                 time.sleep(1)
 
@@ -130,12 +132,13 @@ def launchConfig(path, file_name, ip, port=PORT):
         # this isn't clean but it's the only way I can see to allow the program to finish/conclude
         # No routers left => timeout/CreateSocketError => done
         print("Done")
-        success = True
+        result_msg = "Done" if router_count > 0 else "No Routers Found"
         file_server.shutdown()
 
     except RepeatedConnectioNError:
             print("ConnectionResetError 5 times")
             print("terminating")
+            result_msg = "Connection Error"
 
     finally:
         file_server.shutdown()
@@ -148,7 +151,7 @@ def launchConfig(path, file_name, ip, port=PORT):
         run_time = int(time.time() - run_time)
         print("time taken: {} seconds".format(run_time))
 
-        return result
+        return result_msg
                 
 
     

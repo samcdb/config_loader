@@ -61,6 +61,7 @@ class Interface:
         
     # dynamically draws checkboxes for all .rsc files
     def draw(self):
+        self.detail_txt.set("")
         if self.run == False:
             return
 
@@ -130,18 +131,11 @@ class Interface:
         self.detail_txt.set("Running...")
         self.window.update_idletasks()
 
-        success = self.launch_func(self.path, target_file, self.ip) 
-        self.detail_txt.set("Done") if success else self.error_txt.set("Unsuccessful")
-
-        if success:
-            self.detail_txt.set("Done")
-        else:
-            self.error_txt.set("Unsuccessful")
+        result_msg = self.launch_func(self.path, target_file, self.ip) 
+        self.detail_txt.set(result_msg) 
 
         self.window.update_idletasks()
         self.run = True
-        #draw checkboxes again in case new file was made
-        self.draw()
 
     # wanted to make multi line lambda (couldn't)
     # get path when enter is pressed
